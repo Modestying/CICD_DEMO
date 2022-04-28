@@ -1,0 +1,64 @@
+variables:
+  SERVER_NAME: test_tcp
+  HARBOR_ADDRESS: 192.168.10.212:8089
+  PROJECT_NAME: smart_platform_v1.0
+  DOCKER_TIME: -v /usr/share/:/share/ -v /etc/localtime:/etc/localtime
+  NETWORK: --network=host
+  DOCKER_DEV_TAG: v0.1
+  IMAGE_NAME: test_cicd_fyl
+  CONTAINER_NAME: test_cicd
+
+stages:
+  - develop_pre
+  - develop_build
+  - develop_run
+  - develop_push
+
+develop_pre_job:
+  stage: develop_pre
+  script:
+    - whoami
+    - ifconfig
+    - echo "Login the harbor!"
+    - sudo docker ps -a
+    - sudo docker images
+    - echo $CI_COMMIT_TAG
+    - sudo docker login ${HARBOR_ADDRESS} --username admin --password admin508
+  only:
+    - master
+  tags:
+    - fyl
+
+develop_build-job:
+  stage: develop_build
+  script:
+    - sudo docker build --build-arg ZXW=zkw -t ${HARBOR_ADDRESS}/${PROJECT_NAME}/${IMAGE_NAME}:${DOCKER_DEV_TAG} .
+    - sudo docker ps -a
+    - sudo docker images
+  only:
+    - master
+  tags:
+    - fyl
+
+develop_run-job:
+  stage: develop_run
+  script:
+    - if [ "$(sudo docker ps -a | grep $CONTAINER_NAME)" ]; then
+    - sudo docker rm -f ${CONTAINER_NAME}; fi
+    - sudo docker run -d --name ${CONTAINER_NAME} ${NETWORK} ${DOCKER_TIME} ${HARBOR_ADDRESS}/${PROJECT_NAME}/${IMAGE_NAME}:${DOCKER_DEV_TAG}
+    - sudo docker ps -a
+  only:
+    - master
+  tags:
+    - fyl
+
+develop_push-job:
+  stage: develop_push
+  script:
+    - sudo docker ps -a
+    - sudo docker images
+    - sudo docker push ${HARBOR_ADDRESS}/${PROJECT_NAME}/${IMAGE_NAME}:${DOCKER_DEV_TAG}
+  only:
+    - master
+  tags:
+    - fyl
