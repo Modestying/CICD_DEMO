@@ -13,4 +13,7 @@ RUN export GO111MODULE=on &&\
     go mod tidy && \
     go build main.go
 
+FROM golang:alpine as final
+COPY --from=builder /opt/main /opt/main
+
 CMD ["/opt/main"]
