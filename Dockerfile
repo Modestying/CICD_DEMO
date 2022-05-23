@@ -1,9 +1,9 @@
 FROM golang:alpine as builder
 
-RUN apk add --no-cache git gcc libc-dev curl
-RUN mkdir /go-plugins
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories #仓库代理
+
+RUN apk add git
 COPY ./* /opt/
-#RUN curl https://raw.githubusercontent.com/Kong/go-plugins/master/go-hello.go -o /go-plugins/go-hello.go
 
 RUN export GO111MODULE=on &&\
     export GOPROXY=https://goproxy.cn &&\
